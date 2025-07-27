@@ -5,7 +5,8 @@
   "description": "Run or stop multiple Colab notebooks with a single click.",
   "permissions": [
     "tabs",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "https://colab.research.google.com/*"

@@ -1,8 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Popup opened. Initializing...');
-  const runAllButton = document.getElementById('run-all');
-  const stopAllButton = document.getElementById('stop-all');
+  
+  const toggleButton = document.getElementById('toggle-button');
   const titleKeywordInput = document.getElementById('title-keyword');
+  const statusIndicator = document.getElementById('status-indicator');
+  const buttonIcon = document.querySelector('.button-icon');
+  const buttonText = document.querySelector('.button-text');
+  
+  let isRunning = false;
+  let currentTabs = [];
+  
+  // Load saved keyword from storage
+  loadSavedKeyword();
+  
+  // Save keyword when user types
+  titleKeywordInput.addEventListener('input', () => {
+    const keyword = titleKeywordInput.value;
+    chrome.storage.local.set({ savedKeyword: keyword });
+  });
+
+  function loadSavedKeyword() {
+    chrome.storage.local.get(['savedKeyword'], (result) => {
+      if (result.savedKeyword) {
+        titleKeywordInput.value = result.savedKeyword;
+        console.log('Loaded saved keyword:', result.savedKeyword);
+      }
+    });
+  }
+
+  function showStatus(message, duration = 3000) {
+    statusIndicator.textContent = message;
+    statusIndicator.classList.add('show');
+    setTimeout(() => {
+      statusIndicator.classList.remove('show');
+    }, duration);
+  }
+
+  function updateButtonState(running) {
+    isRunning = running;
+    if (running) {
+      toggleButton.classList.remove('run-mode');
+      toggleButton.classList.add('stop-mode');
+      buttonIcon.textContent = '⏹️';
+      buttonText.textContent = 'Stop All Matching Tabs';
+    } else {
+      toggleButton.classList.remove('stop-mode');
+      toggleButton.classList.add('run-mode');
+      buttonIcon.textContent = '▶️';
+      buttonText.textContent = 'Run All Matching Tabs';
+    }
+  }
 
   function findMatchingTabs(keyword, callback) {
     const queryOptions = { url: "https://colab.research.google.com/*" };
@@ -19,15 +66,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  runAllButton.addEventListener('click', () => {
-    console.log('--- "Run All" button clicked ---');
+  function executeRunAll() {
+    console.log('--- Executing "Run All" ---');
     const keyword = titleKeywordInput.value;
+    
     findMatchingTabs(keyword, (tabs) => {
       if (tabs.length === 0) {
         console.warn('No matching tabs found to run.');
-        alert(`No Colab tabs with "${keyword}" in the title were found.`);
+        showStatus(`❌ No Colab tabs with "${keyword}" found`);
         return;
       }
+      
+      currentTabs = tabs;
+      updateButtonState(true);
+      showStatus(`🚀 Running ${tabs.length} notebook(s)...`);
+      
       tabs.forEach(tab => {
         console.log(`Injecting "run all" script into tab ID: ${tab.id}`);
         chrome.scripting.executeScript({
@@ -42,17 +95,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
     });
-  });
+  }
 
-  stopAllButton.addEventListener('click', () => {
-    console.log('--- "Stop All" button clicked ---');
+  function executeStopAll() {
+    console.log('--- Executing "Stop All" ---');
     const keyword = titleKeywordInput.value;
+    
     findMatchingTabs(keyword, (tabs) => {
       if (tabs.length === 0) {
         console.warn('No matching tabs found to stop.');
-        alert(`No Colab tabs with "${keyword}" in the title were found.`);
+        showStatus(`❌ No Colab tabs with "${keyword}" found`);
+        updateButtonState(false);
         return;
       }
+      
+      showStatus(`⏹️ Stopping ${tabs.length} notebook(s)...`);
+      
       tabs.forEach(tab => {
         console.log(`Injecting "stop" script into tab ID: ${tab.id}`);
         chrome.scripting.executeScript({
@@ -66,8 +124,25 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       });
+      
+      // Reset button state after stopping
+      setTimeout(() => {
+        updateButtonState(false);
+        showStatus('✅ Ready to execute');
+      }, 1000);
     });
+  }
+
+  toggleButton.addEventListener('click', () => {
+    if (isRunning) {
+      executeStopAll();
+    } else {
+      executeRunAll();
+    }
   });
+  
+  // Initialize status
+  showStatus('✅ Ready to execute');
 });
 
 // This function is injected into the Colab page.
@@ -156,24 +231,86 @@ function triggerRunAll() {
   return false;
 }
 
-// This function is injected into the Colab page.
+// This function is injected into the Colab page to stop execution
 function triggerInterrupt() {
-  console.log('[Colab Controller] Attempting to trigger "Interrupt execution" using command...');
-  const interruptCommand = 'runtime.interrupt';
+  console.log('[Colab Controller] Attempting to interrupt execution...');
+  
+  // Method 1: Try keyboard shortcut Ctrl+M I (Interrupt execution)
   try {
-    const colabApp = document.querySelector('colab-app');
-    if (colabApp && colabApp.shadowRoot) {
-      const commandService = colabApp.shadowRoot.querySelector('colab-command-service');
-      if (commandService) {
-        commandService.executeCommand(interruptCommand);
-        console.log(`[Colab Controller] Successfully executed command: "${interruptCommand}"`);
-      } else {
-        console.error('[Colab Controller] Could not find "colab-command-service".');
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'i',
+      code: 'KeyI',
+      ctrlKey: true,
+      metaKey: false,
+      bubbles: true,
+      cancelable: true
+    }));
+    
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'I',
+      code: 'KeyI',
+      ctrlKey: false,
+      metaKey: true,
+      bubbles: true,
+      cancelable: true
+    }));
+    
+    console.log('[Colab Controller] ✅ Sent interrupt keyboard shortcut');
+  } catch (e) {
+    console.error('[Colab Controller] Keyboard shortcut method failed:', e);
+  }
+  
+  // Method 2: Try to find interrupt button
+  try {
+    const interruptSelectors = [
+      'button[aria-label*="Interrupt"]',
+      'button[title*="Interrupt"]',
+      'button[aria-label*="Stop"]',
+      'button[title*="Stop"]',
+      'paper-icon-button[icon="av:stop"]',
+      '[role="button"][aria-label*="Interrupt"]'
+    ];
+
+    for (const selector of interruptSelectors) {
+      const buttons = document.querySelectorAll(selector);
+      if (buttons.length > 0) {
+        console.log(`[Colab Controller] Found interrupt button with selector "${selector}"`);
+        buttons[0].click();
+        console.log('[Colab Controller] ✅ Successfully clicked interrupt button!');
+        return true;
       }
-    } else {
-      console.error('[Colab Controller] Could not find "colab-app" or its shadowRoot.');
     }
   } catch (e) {
-    console.error('[Colab Controller] Error executing "Interrupt" command:', e);
+    console.error('[Colab Controller] Button search method failed:', e);
   }
+  
+  // Method 3: Try Runtime menu approach
+  try {
+    // Simulate Ctrl+M to enter command mode, then I for interrupt
+    const commandModeEvent = new KeyboardEvent('keydown', {
+      key: 'm',
+      code: 'KeyM',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true
+    });
+    document.dispatchEvent(commandModeEvent);
+    
+    setTimeout(() => {
+      const interruptEvent = new KeyboardEvent('keydown', {
+        key: 'i',
+        code: 'KeyI',
+        bubbles: true,
+        cancelable: true
+      });
+      document.dispatchEvent(interruptEvent);
+      console.log('[Colab Controller] ✅ Sent command mode interrupt sequence');
+    }, 100);
+    
+  } catch (e) {
+    console.error('[Colab Controller] Command mode method failed:', e);
+  }
+  
+  console.log('[Colab Controller] Interrupt methods executed');
+  return true;
 }
