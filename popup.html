@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Katago Colab Controller</title>
+  <title>Colab Controller</title>
   <style>
     body {
       font-family: sans-serif;
@@ -12,6 +12,13 @@
     }
     h3 {
       color: #333;
+    }
+    input[type="text"] {
+      width: calc(100% - 20px);
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
     button {
       width: 100%;
@@ -40,9 +47,10 @@
   </style>
 </head>
 <body>
-  <h3>Katago Colab Controller</h3>
-  <button id="run-all">Run All Katago Tabs</button>
-  <button id="stop-all">Stop All Katago Tabs</button>
+  <h3>Colab Controller</h3>
+  <input type="text" id="title-keyword" placeholder="Enter title keyword...">
+  <button id="run-all">Run All Matching Tabs</button>
+  <button id="stop-all">Stop All Matching Tabs</button>
   <script src="popup.js"></script>
 </body>
 </html>

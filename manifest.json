@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Katago Colab Controller",
+  "name": "Colab Controller",
   "version": "1.0",
-  "description": "Run or stop all Katago Colab notebooks with a single click.",
+  "description": "Run or stop multiple Colab notebooks with a single click.",
   "permissions": [
     "tabs",
     "scripting"
