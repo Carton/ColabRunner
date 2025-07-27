@@ -128,8 +128,30 @@
       transform: translateY(0);
     }
     
+    /* CSS图标样式 - 替代emoji */
     .button-icon {
-      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      position: relative;
+      display: inline-block;
+    }
+    
+    /* 播放图标 (三角形) */
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-left: 12px solid white;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      margin-left: 2px;
+    }
+    
+    /* 停止图标 (方形) */
+    .stop-icon {
+      width: 12px;
+      height: 12px;
+      background-color: white;
+      border-radius: 2px;
     }
     
     .status-indicator {
@@ -146,11 +168,44 @@
     .status-indicator.show {
       opacity: 1;
     }
+    
+    /* 状态图标 */
+    .status-icon {
+      display: inline-block;
+      margin-right: 6px;
+    }
+    
+    .rocket-icon {
+      position: relative;
+    }
+    
+    .rocket-icon::before {
+      content: "↗";
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .stop-status-icon::before {
+      content: "■";
+      font-size: 12px;
+    }
+    
+    .check-icon::before {
+      content: "✓";
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .cross-icon::before {
+      content: "×";
+      font-size: 16px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h3>🚀 Colab Controller</h3>
+    <h3>Colab Controller</h3>
     
     <div class="input-group">
       <label class="input-label" for="title-keyword">Filter by Title</label>
@@ -158,12 +213,12 @@
     </div>
     
     <button id="toggle-button" class="toggle-button run-mode">
-      <span class="button-icon">▶️</span>
+      <span class="button-icon play-icon"></span>
       <span class="button-text">Run All Matching Tabs</span>
     </button>
     
     <div id="status-indicator" class="status-indicator">
-      Ready to execute
+      <span class="status-icon check-icon"></span>Ready to execute
     </div>
   </div>
   

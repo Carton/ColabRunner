@@ -28,12 +28,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function showStatus(message, duration = 3000) {
-    statusIndicator.textContent = message;
+  function showStatus(message, type = 'success') {
+    const statusIcon = statusIndicator.querySelector('.status-icon');
+    
+    // 更新图标类
+    statusIcon.className = 'status-icon';
+    switch(type) {
+      case 'running':
+        statusIcon.classList.add('rocket-icon');
+        break;
+      case 'stopping':
+        statusIcon.classList.add('stop-status-icon');
+        break;
+      case 'error':
+        statusIcon.classList.add('cross-icon');
+        break;
+      default:
+        statusIcon.classList.add('check-icon');
+    }
+    
+    statusIndicator.innerHTML = `<span class="${statusIcon.className}">${statusIcon.innerHTML}</span>${message}`;
     statusIndicator.classList.add('show');
     setTimeout(() => {
       statusIndicator.classList.remove('show');
-    }, duration);
+    }, 3000);
   }
 
   function updateButtonState(running) {
@@ -41,12 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (running) {
       toggleButton.classList.remove('run-mode');
       toggleButton.classList.add('stop-mode');
-      buttonIcon.textContent = '⏹️';
+      buttonIcon.className = 'button-icon stop-icon';
       buttonText.textContent = 'Stop All Matching Tabs';
     } else {
       toggleButton.classList.remove('stop-mode');
       toggleButton.classList.add('run-mode');
-      buttonIcon.textContent = '▶️';
+      buttonIcon.className = 'button-icon play-icon';
       buttonText.textContent = 'Run All Matching Tabs';
     }
   }
@@ -73,13 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
     findMatchingTabs(keyword, (tabs) => {
       if (tabs.length === 0) {
         console.warn('No matching tabs found to run.');
-        showStatus(`❌ No Colab tabs with "${keyword}" found`);
+        showStatus(`No Colab tabs with "${keyword}" found`, 'error');
         return;
       }
       
       currentTabs = tabs;
       updateButtonState(true);
-      showStatus(`🚀 Running ${tabs.length} notebook(s)...`);
+      showStatus(`Running ${tabs.length} notebook(s)...`, 'running');
       
       tabs.forEach(tab => {
         console.log(`Injecting "run all" script into tab ID: ${tab.id}`);
@@ -104,12 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
     findMatchingTabs(keyword, (tabs) => {
       if (tabs.length === 0) {
         console.warn('No matching tabs found to stop.');
-        showStatus(`❌ No Colab tabs with "${keyword}" found`);
+        showStatus(`No Colab tabs with "${keyword}" found`, 'error');
         updateButtonState(false);
         return;
       }
       
-      showStatus(`⏹️ Stopping ${tabs.length} notebook(s)...`);
+      showStatus(`Stopping ${tabs.length} notebook(s)...`, 'stopping');
       
       tabs.forEach(tab => {
         console.log(`Injecting "stop" script into tab ID: ${tab.id}`);
@@ -128,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Reset button state after stopping
       setTimeout(() => {
         updateButtonState(false);
-        showStatus('✅ Ready to execute');
+        showStatus('Ready to execute', 'success');
       }, 1000);
     });
   }
@@ -142,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // Initialize status
-  showStatus('✅ Ready to execute');
+  showStatus('Ready to execute', 'success');
 });
 
 // This function is injected into the Colab page.
