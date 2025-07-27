@@ -130,10 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
       showStatus(`Stopping ${tabs.length} notebook(s)...`, 'stopping');
       
       tabs.forEach(tab => {
-        console.log(`Injecting "stop" script into tab ID: ${tab.id}`);
+        console.log(`Injecting "stop" script into tab ID: ${tab.id} (using same run button)`);
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          function: triggerInterrupt,
+          function: triggerRunAll, // 使用相同的 triggerRunAll 函数，因为在 Colab 中同一个按钮可以开始/停止
         }, (injectionResults) => {
           if (chrome.runtime.lastError) {
             console.error(`Error injecting script into tab ${tab.id}:`, chrome.runtime.lastError.message);
@@ -249,86 +249,3 @@ function triggerRunAll() {
   return false;
 }
 
-// This function is injected into the Colab page to stop execution
-function triggerInterrupt() {
-  console.log('[Colab Controller] Attempting to interrupt execution...');
-  
-  // Method 1: Try keyboard shortcut Ctrl+M I (Interrupt execution)
-  try {
-    document.dispatchEvent(new KeyboardEvent('keydown', {
-      key: 'i',
-      code: 'KeyI',
-      ctrlKey: true,
-      metaKey: false,
-      bubbles: true,
-      cancelable: true
-    }));
-    
-    document.dispatchEvent(new KeyboardEvent('keydown', {
-      key: 'I',
-      code: 'KeyI',
-      ctrlKey: false,
-      metaKey: true,
-      bubbles: true,
-      cancelable: true
-    }));
-    
-    console.log('[Colab Controller] ✅ Sent interrupt keyboard shortcut');
-  } catch (e) {
-    console.error('[Colab Controller] Keyboard shortcut method failed:', e);
-  }
-  
-  // Method 2: Try to find interrupt button
-  try {
-    const interruptSelectors = [
-      'button[aria-label*="Interrupt"]',
-      'button[title*="Interrupt"]',
-      'button[aria-label*="Stop"]',
-      'button[title*="Stop"]',
-      'paper-icon-button[icon="av:stop"]',
-      '[role="button"][aria-label*="Interrupt"]'
-    ];
-
-    for (const selector of interruptSelectors) {
-      const buttons = document.querySelectorAll(selector);
-      if (buttons.length > 0) {
-        console.log(`[Colab Controller] Found interrupt button with selector "${selector}"`);
-        buttons[0].click();
-        console.log('[Colab Controller] ✅ Successfully clicked interrupt button!');
-        return true;
-      }
-    }
-  } catch (e) {
-    console.error('[Colab Controller] Button search method failed:', e);
-  }
-  
-  // Method 3: Try Runtime menu approach
-  try {
-    // Simulate Ctrl+M to enter command mode, then I for interrupt
-    const commandModeEvent = new KeyboardEvent('keydown', {
-      key: 'm',
-      code: 'KeyM',
-      ctrlKey: true,
-      bubbles: true,
-      cancelable: true
-    });
-    document.dispatchEvent(commandModeEvent);
-    
-    setTimeout(() => {
-      const interruptEvent = new KeyboardEvent('keydown', {
-        key: 'i',
-        code: 'KeyI',
-        bubbles: true,
-        cancelable: true
-      });
-      document.dispatchEvent(interruptEvent);
-      console.log('[Colab Controller] ✅ Sent command mode interrupt sequence');
-    }, 100);
-    
-  } catch (e) {
-    console.error('[Colab Controller] Command mode method failed:', e);
-  }
-  
-  console.log('[Colab Controller] Interrupt methods executed');
-  return true;
-}
