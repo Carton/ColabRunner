@@ -69,39 +69,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // This function is injected into the Colab page.
 function triggerRunAll() {
-  console.log('[Katago Controller] 尝试找到并执行第一个代码单元...');
+  console.log('[Katago Controller] Trying to find and execute the first code cell...');
 
   // 方法1: 使用已验证的 colab-run-button（测试中证明有效）
   try {
     const runButtons = document.querySelectorAll('colab-run-button');
-    console.log(`[Katago Controller] 找到 ${runButtons.length} 个 colab-run-button`);
+    console.log(`[Katago Controller] Found ${runButtons.length} colab-run-buttons`);
 
     if (runButtons.length > 0) {
       const firstButton = runButtons[0];
-      console.log('[Katago Controller] 找到第一个 colab-run-button，尝试点击:', firstButton);
+      console.log('[Katago Controller] Found the first colab-run-button, attempting to click:', firstButton);
       firstButton.click();
-      console.log('[Katago Controller] ✅ 成功点击第一个 colab-run-button！');
+      console.log('[Katago Controller] ✅ Successfully clicked the first colab-run-button!');
       return true;
     }
   } catch (e) {
-    console.error('[Katago Controller] colab-run-button 方法失败:', e);
+    console.error('[Katago Controller] colab-run-button method failed:', e);
   }
 
   // 方法2: 查找 .cell.code 代码单元（测试中也找到了）
   try {
     const codeCells = document.querySelectorAll('.cell.code');
-    console.log(`[Katago Controller] 找到 ${codeCells.length} 个 .cell.code 元素`);
+    console.log(`[Katago Controller] Found ${codeCells.length} .cell.code elements`);
 
     if (codeCells.length > 0) {
       const firstCell = codeCells[0];
-      console.log('[Katago Controller] 找到第一个代码单元，尝试在其中查找运行按钮');
+      console.log('[Katago Controller] Found the first code cell, attempting to find the run button inside it');
 
       // 在代码单元内查找运行按钮
       const cellRunButton = firstCell.querySelector('colab-run-button, button[aria-label*="Run"], [role="button"]');
       if (cellRunButton) {
-        console.log('[Katago Controller] 在代码单元内找到运行按钮，点击:', cellRunButton);
+        console.log('[Katago Controller] Found the run button inside the code cell, clicking:', cellRunButton);
         cellRunButton.click();
-        console.log('[Katago Controller] ✅ 成功点击代码单元内的运行按钮！');
+        console.log('[Katago Controller] ✅ Successfully clicked the run button inside the code cell!');
         return true;
       }
 
@@ -120,13 +120,13 @@ function triggerRunAll() {
 
         firstCell.dispatchEvent(shiftEnterEvent);
         document.dispatchEvent(shiftEnterEvent);
-        console.log('[Katago Controller] ✅ 向第一个代码单元发送了 Shift+Enter');
+        console.log('[Katago Controller] ✅ Sent Shift+Enter to the first code cell');
       }, 100);
 
       return true;
     }
   } catch (e) {
-    console.error('[Katago Controller] 代码单元方法失败:', e);
+    console.error('[Katago Controller] Code cell method failed:', e);
   }
 
   // 方法3: 备用方案 - 查找其他可能的运行按钮
@@ -141,17 +141,17 @@ function triggerRunAll() {
     for (const selector of backupSelectors) {
       const buttons = document.querySelectorAll(selector);
       if (buttons.length > 0) {
-        console.log(`[Katago Controller] 备用方案：使用选择器 "${selector}" 找到 ${buttons.length} 个按钮`);
+        console.log(`[Katago Controller] Fallback: Using selector "${selector}" found ${buttons.length} buttons`);
         buttons[0].click();
-        console.log('[Katago Controller] ✅ 备用方案成功点击！');
+        console.log('[Katago Controller] ✅ Fallback method successfully clicked!');
         return true;
       }
     }
   } catch (e) {
-    console.error('[Katago Controller] 备用方案失败:', e);
+    console.error('[Katago Controller] Fallback method failed:', e);
   }
 
-  console.warn('[Katago Controller] ❌ 所有方法都失败了，无法找到可执行的代码单元');
+  console.warn('[Katago Controller] ❌ All methods failed, unable to find an executable code cell');
   return false;
 }
 
