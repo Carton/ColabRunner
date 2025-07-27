@@ -165,38 +165,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // This function is injected into the Colab page.
 function triggerRunAll() {
-  console.log('[Colab Controller] Trying to find and execute the first code cell...');
+  console.log('[Colab Runner] Trying to find and execute the first code cell...');
 
   // Method 1: Use the verified colab-run-button
   try {
     const runButtons = document.querySelectorAll('colab-run-button');
-    console.log(`[Colab Controller] Found ${runButtons.length} colab-run-buttons`);
+    console.log(`[Colab Runner] Found ${runButtons.length} colab-run-buttons`);
 
     if (runButtons.length > 0) {
       const firstButton = runButtons[0];
-      console.log('[Colab Controller] Found the first colab-run-button, attempting to click:', firstButton);
+      console.log('[Colab Runner] Found the first colab-run-button, attempting to click:', firstButton);
       firstButton.click();
-      console.log('[Colab Controller] ✅ Successfully clicked the first colab-run-button!');
+      console.log('[Colab Runner] ✅ Successfully clicked the first colab-run-button!');
       return true;
     }
   } catch (e) {
-    console.error('[Colab Controller] colab-run-button method failed:', e);
+    console.error('[Colab Runner] colab-run-button method failed:', e);
   }
 
   // Method 2: Find .cell.code elements
   try {
     const codeCells = document.querySelectorAll('.cell.code');
-    console.log(`[Colab Controller] Found ${codeCells.length} .cell.code elements`);
+    console.log(`[Colab Runner] Found ${codeCells.length} .cell.code elements`);
 
     if (codeCells.length > 0) {
       const firstCell = codeCells[0];
-      console.log('[Colab Controller] Found the first code cell, attempting to find the run button inside it');
+      console.log('[Colab Runner] Found the first code cell, attempting to find the run button inside it');
 
       const cellRunButton = firstCell.querySelector('colab-run-button, button[aria-label*="Run"], [role="button"]');
       if (cellRunButton) {
-        console.log('[Colab Controller] Found the run button inside the code cell, clicking:', cellRunButton);
+        console.log('[Colab Runner] Found the run button inside the code cell, clicking:', cellRunButton);
         cellRunButton.click();
-        console.log('[Colab Controller] ✅ Successfully clicked the run button inside the code cell!');
+        console.log('[Colab Runner] ✅ Successfully clicked the run button inside the code cell!');
         return true;
       }
 
@@ -214,13 +214,13 @@ function triggerRunAll() {
 
         firstCell.dispatchEvent(shiftEnterEvent);
         document.dispatchEvent(shiftEnterEvent);
-        console.log('[Colab Controller] ✅ Sent Shift+Enter to the first code cell');
+        console.log('[Colab Runner] ✅ Sent Shift+Enter to the first code cell');
       }, 100);
 
       return true;
     }
   } catch (e) {
-    console.error('[Colab Controller] Code cell method failed:', e);
+    console.error('[Colab Runner] Code cell method failed:', e);
   }
 
   // Method 3: Fallback to other possible run buttons
@@ -235,17 +235,17 @@ function triggerRunAll() {
     for (const selector of backupSelectors) {
       const buttons = document.querySelectorAll(selector);
       if (buttons.length > 0) {
-        console.log(`[Colab Controller] Fallback: Using selector "${selector}" found ${buttons.length} buttons`);
+        console.log(`[Colab Runner] Fallback: Using selector "${selector}" found ${buttons.length} buttons`);
         buttons[0].click();
-        console.log('[Colab Controller] ✅ Fallback method successfully clicked!');
+        console.log('[Colab Runner] ✅ Fallback method successfully clicked!');
         return true;
       }
     }
   } catch (e) {
-    console.error('[Colab Controller] Fallback method failed:', e);
+    console.error('[Colab Runner] Fallback method failed:', e);
   }
 
-  console.warn('[Colab Controller] ❌ All methods failed, unable to find an executable code cell');
+  console.warn('[Colab Runner] ❌ All methods failed, unable to find an executable code cell');
   return false;
 }
 

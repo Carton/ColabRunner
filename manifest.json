@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Colab Controller",
+  "name": "Colab Runner",
   "version": "1.0",
   "description": "Run or stop multiple Colab notebooks with a single click.",
   "permissions": [
