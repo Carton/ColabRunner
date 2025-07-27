@@ -1,6 +1,6 @@
-# Colab Control Extension
+# Colab Runner Extension
 
-A Chrome extension for easy access and control of Google Colab notebooks.
+A Chrome extension for easy running and stopping of multiple Google Colab notebooks.
 
 ## Overview
 
