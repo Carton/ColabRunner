@@ -164,7 +164,26 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // This function is injected into the Colab page.
-function triggerRunAll() {
+async function triggerRunAll() {
+  console.log('[Colab Runner] Starting execution sequence...');
+
+  // Attempt to dismiss any pop-up dialog by simulating an "Escape" key press.
+  try {
+    console.log('[Colab Runner] Simulating "Escape" key press to dismiss potential dialogs...');
+    document.body.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Escape',
+      code: 'Escape',
+      keyCode: 27
+    }));
+    console.log('[Colab Runner] "Escape" key event dispatched.');
+    // Wait a bit for the dialog to close
+    await new Promise(resolve => setTimeout(resolve, 500));
+  } catch (e) {
+    console.error('[Colab Runner] Failed to dispatch "Escape" key event:', e);
+  }
+  
   console.log('[Colab Runner] Trying to find and execute the first code cell...');
 
   // Method 1: Use the verified colab-run-button
