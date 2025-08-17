@@ -76,51 +76,60 @@
   // 实际执行第一个代码单元
   function executeFirstCell() {
     console.log('\n--- 尝试执行第一个代码单元 ---');
+    
+    // 先刷新页面
+    console.log('🔄 正在刷新页面...');
+    location.reload();
+    
+    // 等待页面刷新完成后执行
+    setTimeout(() => {
+      console.log('✅ 页面已刷新，开始查找运行按钮...');
+      
+      // 方法1: 查找并点击第一个运行按钮
+      const runSelectors = [
+        'button[aria-label*="Run"]',
+        'colab-run-button',
+        'paper-icon-button[icon="av:play-arrow"]'
+      ];
 
-    // 方法1: 查找并点击第一个运行按钮
-    const runSelectors = [
-      'button[aria-label*="Run"]',
-      'colab-run-button',
-      'paper-icon-button[icon="av:play-arrow"]'
-    ];
-
-    for (const selector of runSelectors) {
-      const buttons = document.querySelectorAll(selector);
-      if (buttons.length > 0) {
-        console.log(`使用选择器 "${selector}" 找到运行按钮，尝试点击...`);
-        buttons[0].click();
-        console.log('✅ 点击成功！');
-        return true;
+      for (const selector of runSelectors) {
+        const buttons = document.querySelectorAll(selector);
+        if (buttons.length > 0) {
+          console.log(`使用选择器 "${selector}" 找到运行按钮，尝试点击...`);
+          buttons[0].click();
+          console.log('✅ 点击成功！');
+          return true;
+        }
       }
-    }
 
-    // 方法2: 查找代码单元并发送快捷键
-    const cellSelectors = ['.code-cell', '[data-type="code"]', '.cell'];
-    for (const selector of cellSelectors) {
-      const cells = document.querySelectorAll(selector);
-      if (cells.length > 0) {
-        console.log(`使用选择器 "${selector}" 找到代码单元，尝试发送 Shift+Enter...`);
-        const firstCell = cells[0];
-        firstCell.focus();
-        firstCell.click();
+      // 方法2: 查找代码单元并发送快捷键
+      const cellSelectors = ['.code-cell', '[data-type="code"]', '.cell'];
+      for (const selector of cellSelectors) {
+        const cells = document.querySelectorAll(selector);
+        if (cells.length > 0) {
+          console.log(`使用选择器 "${selector}" 找到代码单元，尝试发送 Shift+Enter...`);
+          const firstCell = cells[0];
+          firstCell.focus();
+          firstCell.click();
 
-        setTimeout(() => {
-          const event = new KeyboardEvent('keydown', {
-            key: 'Enter',
-            shiftKey: true,
-            bubbles: true,
-            cancelable: true
-          });
-          firstCell.dispatchEvent(event);
-          document.dispatchEvent(event);
-          console.log('✅ 快捷键发送成功！');
-        }, 100);
-        return true;
+          setTimeout(() => {
+            const event = new KeyboardEvent('keydown', {
+              key: 'Enter',
+              shiftKey: true,
+              bubbles: true,
+              cancelable: true
+            });
+            firstCell.dispatchEvent(event);
+            document.dispatchEvent(event);
+            console.log('✅ 快捷键发送成功！');
+          }, 100);
+          return true;
+        }
       }
-    }
 
-    console.log('❌ 所有方法都失败了');
-    return false;
+      console.log('❌ 所有方法都失败了');
+      return false;
+    }, 2000); // 等待2秒让页面完全加载
   }
 
   // 运行所有测试
